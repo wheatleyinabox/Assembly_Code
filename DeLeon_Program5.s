@@ -214,7 +214,7 @@ print:
 #	$t8 <- temp $s to swap
 #
 swap:
-		add $s7, $zero, $ra		# save $ra
+		add $s7, $zero, $ra			# save $ra
 
 		li $v0, 4				# code for print_str
 		la $a0, newline				# $a0 <- newline
@@ -225,8 +225,8 @@ swap:
 		syscall					# print swapONE
 
 		li $v0, 5				# code for read_int
-		syscall						# $a0 <- input
-		move $v0, $s0			# $s0 <- record num 1
+		syscall					# $a0 <- input
+		move $v0, $s0				# $s0 <- record num 1
 
 		li $v0, 4				# code for print_str
 		la $a0, newline				# $a0 <- newline
@@ -237,41 +237,49 @@ swap:
 		syscall					# print swapTWO
 
 		li $v0, 5				# code for read_int
-		syscall						# $a0 <- input
-		move $v0, $s1			# $s1 <- record num 2
+		syscall					# $a0 <- input
+		move $v0, $s1				# $s1 <- record num 2
 
 		li $s2, 1				# $s2 <- 1
-		sub $s0, $s0, $s2		# $s0 - 1
-		sub $s1, $s1, $s2       # $s1 - 1
+		sub $s0, $s0, $s2			# $s0 - 1
+		sub $s1, $s1, $s2       		# $s1 - 1
 
 		li $s3, 4				# $s3 <- 4
 		li $s4, 40				# $s4 <- 40
-		la $s5, intArr			# $s5 <- intArr address
-		la $s6, strArr			# $s6 <- strArr address
+		la $s5, intArr				# $s5 <- intArr address
+		la $s6, strArr				# $s6 <- strArr address
 
-		mult $s0, $s4		    # $t5 <- index str
+#======================================================================================
+
+		mult $s0, $s4		    		# $t5 <- index str
 		mflo $t5
-		mult $s0, $s4			# $t6 <- index str
+		mult $s1, $s4				# $t6 <- index str
 		mflo $t6
 
-		add $t5, $s6, $t5		# address + index str
-		add $t6, $s6, $t6		# address + index str
+		add $t5, $t5, $s6			# address + index str
+		add $t6, $t6, $s6			# address + index str
 
-		lw $t7, ($t5)			# $t7 <- value @ strArr[]
-		lw $t8, ($t6)			# $t8 <- value @ strArr[]
+		lw $t7, ($t5)				# $t7 <- value @ strArr[]
+		lw $t8, ($t6)				# $t8 <- value @ strArr[]
 
-		sw $t7, ($t6)			# swap
-		sw $t8, ($t5)			# swap
+		sw $t7, ($t6)				# swap
+		sw $t8, ($t5)				# swap
+
+#======================================================================================
 
 		# mult $s0, $s3 			# $t0 <- index int
 		# mflo $t3
-		# mult $s1, $s3			# $t1 <- index int
+		# mult $s1, $s3				# $t1 <- index int
 		# mflo $t4
+
+
+
+#======================================================================================
 
 		jal print				# go to 'print'
 		li $ra, 0				# clear $ra
 
-		add $ra, $zero, $s7		# load with proper $ra
+		add $ra, $zero, $s7			# load with proper $ra
 
 		jr $ra					# return to main
 
