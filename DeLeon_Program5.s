@@ -5,14 +5,10 @@
 # Each will be read in by the user and then printed out in an organized matter. A menu will allow for swap information between records or to exit.
 #
 #	strArr: [name1, name2, name3, name4, name5, name6, name7, name8, name9, name10]
-#	intArr: [age1, age2, age3, age4, age5, age6, age7, age8, age9, age10]
-#	        [ID1, ID2, ID3, ID4, ID5, ID6, ID7, ID8, ID9, ID10]
+#	intArr: [age1, ID1, age2, ID2, age3, ID3, age4, ID4, age5, ID5, age6, ID6, age7, ID7, age8, ID8, age9, ID9, age10, ID10]
 #
 #
 .data
-	intArr:		.space 80		# 20 ints, 4 bytes each (80)
-	strArr:		.space 410 		# 10 strings, 40 chars max length + null char (410)
-
 	newline: 	.asciiz "\n"
 	space: 		.asciiz " "
 	colon:		.asciiz ": "
@@ -23,6 +19,10 @@
 	menuPrompt:	.asciiz "Menu: \n1) Swap 2 records \n2) Exit \nChoose one of the above options: \n"
 	swapONE:	.asciiz "Enter 1st record number: "
 	swapTWO:	.asciiz "Enter 2nd record number: "
+
+	.align 2
+	intArr:		.space 80		# 20 ints, 4 bytes each (80)
+	strArr:		.space 410 		# 10 strings, 40 chars max length + null char (410)
 #
 # Registers:
 #	$t0 <- general loop counter / str counter
@@ -188,18 +188,34 @@ print:
 # Visualization:
 #
 #	s, s, s, s, s, s, s, s, s, s
-#	1  2  3  4  5  6  7  8  9  10
+#	0  1  2  3  4  5  6  7  8  9
 #
-#	ii, ii, ii, ii, ii, ii, ii, ii, ii, ii
-#	1    2   3   4   5   6   7   8   9  10
+#	ii, ii, ii, ii, ii, ii,  ii,  ii,  ii,  ii
+#	01  23  45  67  89  1011 1213 1415 1617 1819
+#	0/4, 8/12, 16/20, 24/28, 32/36, 40/44, 48/52, 56/60, 64/68, 72/76
 #
 # Registers:
-#	
-#	$t0 <- 
+#
 #	$s0 <- record num 1 
 #	$s1 <- record num 2
+# 	$s2 <- 1
+#   $s3 <- 4
+#	$s4 <- 40
+# 	$s5 <- intArr address
+# 	$s6 <- strArr address
+#
+#	$s7 - $ra
+#
+#	$t3 <- index int
+#	$t4 <- index int
+#	$t5 <- index str
+#	$t6 <- index str
+#	$t7 <- temp $s to swap
+#	$t8 <- temp $s to swap
 #
 swap:
+		add $s7, $zero, $ra		# save $ra
+
 		li $v0, 4				# code for print_str
 		la $a0, newline				# $a0 <- newline
 		syscall					# print newline
@@ -208,6 +224,8 @@ swap:
 		la $a0, swapONE				# $a0 <- swapONE
 		syscall					# print swapONE
 
+		li $v0, 5				# code for read_int
+		syscall						# $a0 <- input
 		move $v0, $s0			# $s0 <- record num 1
 
 		li $v0, 4				# code for print_str
@@ -218,9 +236,44 @@ swap:
 		la $a0, swapTWO				# $a0 <- swapTWO
 		syscall					# print swapTWO
 
+		li $v0, 5				# code for read_int
+		syscall						# $a0 <- input
 		move $v0, $s1			# $s1 <- record num 2
 
-		
+		li $s2, 1				# $s2 <- 1
+		sub $s0, $s0, $s2		# $s0 - 1
+		sub $s1, $s1, $s2       # $s1 - 1
+
+		li $s3, 4				# $s3 <- 4
+		li $s4, 40				# $s4 <- 40
+		la $s5, intArr			# $s5 <- intArr address
+		la $s6, strArr			# $s6 <- strArr address
+
+		mult $s0, $s4		    # $t5 <- index str
+		mflo $t5
+		mult $s0, $s4			# $t6 <- index str
+		mflo $t6
+
+		add $t5, $s6, $t5		# address + index str
+		add $t6, $s6, $t6		# address + index str
+
+		lw $t7, ($t5)			# $t7 <- value @ strArr[]
+		lw $t8, ($t6)			# $t8 <- value @ strArr[]
+
+		sw $t7, ($t6)			# swap
+		sw $t8, ($t5)			# swap
+
+		# mult $s0, $s3 			# $t0 <- index int
+		# mflo $t3
+		# mult $s1, $s3			# $t1 <- index int
+		# mflo $t4
+
+		jal print				# go to 'print'
+		li $ra, 0				# clear $ra
+
+		add $ra, $zero, $s7		# load with proper $ra
+
+		jr $ra					# return to main
 
 #------------------------------------------------------------------------------------------------------------------------
 
