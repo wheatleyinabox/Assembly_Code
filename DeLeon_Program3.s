@@ -154,7 +154,7 @@ o1:
 	move $t3, $v0							# store int in $t3
 
 	la $t2, numbers						# load array address into $t2
-	add $s0, $0, $t3					# load value into $s0 register
+	add $s0, $0, $t3					# load replaceValue into $s0 register
 	sw $s0, numbers($t1)						# Use value to replace numbers[i]
 
 	li $v0, 4							# code for print_str
