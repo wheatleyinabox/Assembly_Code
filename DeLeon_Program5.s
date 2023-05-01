@@ -19,7 +19,7 @@
 
 	prefix:		.asciiz "Record "
 	inputNames:	.asciiz "Enter in the names for 10 students: "
-	inputAgeID:	.asciiz "Enter the age for 10 students: "
+	inputAgeID:	.asciiz "Enter the [age, ID] for 10 students: "
 	menuPrompt:	.asciiz "Menu: \n1) Swap 2 records \n2) Exit \nChoose one of the above options: \n"
 	swapONE:	.asciiz "Enter 1st record number: "
 	swapTWO:	.asciiz "Enter 2nd record number: "
@@ -195,11 +195,32 @@ print:
 #
 # Registers:
 #	
-#	filler
+#	$t0 <- 
+#	$s0 <- record num 1 
+#	$s1 <- record num 2
 #
 swap:
-		li $v0, 10				# code for termination
-		syscall					# terminate program run	
+		li $v0, 4				# code for print_str
+		la $a0, newline				# $a0 <- newline
+		syscall					# print newline
+		
+		li $v0, 4				# code for print_str
+		la $a0, swapONE				# $a0 <- swapONE
+		syscall					# print swapONE
+
+		move $v0, $s0			# $s0 <- record num 1
+
+		li $v0, 4				# code for print_str
+		la $a0, newline				# $a0 <- newline
+		syscall					# print newline
+		
+		li $v0, 4				# code for print_str
+		la $a0, swapTWO				# $a0 <- swapTWO
+		syscall					# print swapTWO
+
+		move $v0, $s1			# $s1 <- record num 2
+
+		
 
 #------------------------------------------------------------------------------------------------------------------------
 
