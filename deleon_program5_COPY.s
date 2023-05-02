@@ -4,10 +4,6 @@
 # Description: A program that will create a 2D array (10x3) for [string, int, int] to hold a record.
 # Each will be read in by the user and then printed out in an organized matter. A menu will allow for swap information between records or to exit.
 #
-#	strArr: [name1, name2, name3, name4, name5, name6, name7, name8, name9, name10]
-#	intArr: [age1, ID1, age2, ID2, age3, ID3, age4, ID4, age5, ID5, age6, ID6, age7, ID7, age8, ID8, age9, ID9, age10, ID10]
-#
-#
 .data
 	newline: 	.asciiz "\n"
 	space: 		.asciiz " "
@@ -15,25 +11,26 @@
 
 	prefix:		.asciiz "Record "
 	inputNames:	.asciiz "Enter in the names for 10 students: "
-	inputAgeID:	.asciiz "Enter the [age, ID] for 10 students: "
+	inputAge:	.asciiz "Enter the age for 10 students: "
+	inputID:	.asciiz "Enter the ID for 10 students: "
 	menuPrompt:	.asciiz "Menu: \n1) Swap 2 records \n2) Exit \nChoose one of the above options: \n"
 	swapONE:	.asciiz "Enter 1st record number: "
 	swapTWO:	.asciiz "Enter 2nd record number: "
 
 	.align 2
-	intArr:		.space 80		# 20 ints, 4 bytes each (80)
+	ageArr:		.space 40		# 10 ints, 4 bytes each (40)
+	IDArr:		.space 40		# 10 ints, 4 bytes each (40)
 	strArr:		.space 410 		# 10 strings, 40 chars max length + null char (410)
 #
 # Registers:
 #	$t0 <- general loop counter / str counter
-#	$t1 <- int counter
-#	$t2 <- record counter
+#	$t1 <- age counter
+#	$t2 <- ID counter
+#	$t3 <- record counter
 #
 .text
 main:	# call methods
 		li $t0, 0				# load $t0 <- 0
-		li $t1, 0				# load $t1 <- 0
-		li $t2, 1				# load $t2 <- 1
 
 		jal store				# call store subroutine
 		sll $0, $0, 0				# no-op
@@ -41,8 +38,11 @@ main:	# call methods
 		li $v0, 4				# code for print_str
 		la $a0, newline				# $a0 <- newline
 		syscall					# print str
-
+	
 		li $t0, 0				# load $t0 <- 0
+		li $t1, 0				# load $t1 <- 0
+		li $t2, 0				# load $t2 <- 0
+		li $t3, 1				# load $t3 <- 1
 
 		jal print				# call print subroutine
 		sll $0, $0, 0				# no-op
@@ -50,7 +50,8 @@ main:	# call methods
 		# reset all values
 		li $t0, 0				# load $t0 <- 0
 		li $t1, 0				# load $t1 <- 0
-		li $t2, 1				# load $t2 <- 1
+		li $t2, 0				# load $t2 <- 0
+		li $t3, 1				# load $t3 <- 1
 
 		j menuLoop				# go to 'menuLoop'
 menuLoop:	
@@ -87,7 +88,7 @@ store:
 		syscall					# print str
 
 		readStrs:
-			beq $t0, 410, printIntPrompt	# if count = strings.length, go to 'printIntPrompt'
+			beq $t0, 410, printAgePrompt	# if count = strings.length, go to 'printIntPrompt'
 
 			li $v0, 8			# code for read_str
 			la $a0, strArr($t0)		# store str in strings($t0)
@@ -98,53 +99,85 @@ store:
 
 			j readStrs			# loop
 
-		printIntPrompt:
+		printAgePrompt:
 			li $v0, 4			# code for print_str
 			la $a0, newline			# $a0 <- newline
 			syscall				# print str
 
  			li $v0, 4			# code for print_str
-			la $a0, inputAgeID		# $a0 <- inputAgeID
+			la $a0, inputAge		# $a0 <- inputAge
 			syscall				# print str
 
 			li $v0, 4			# code for print_str
 			la $a0, newline			# $a0 <- newline
 			syscall				# print str
 
-			j resetCount			# go to 'resetCount'			
+			j resetCountFirst			# go to 'resetCountFirst'			
 
-		resetCount:
+		resetCountFirst:
 			li $t0, 0			# set $t0 = 0
-			j readAgeID			# go to 'readAgeID'
+			j readAge			# go to 'readAge'
 
-		readAgeID:
-			beq $t0, 80, return   		# if count = integers.length, return to main
+		readAge:
+			beq $t0, 40, printIDPrompt   # if count = integers.length, go to 'printIDPrompt'
 
 			li $v0, 5			# code for read_int
 			syscall				# store int
 
-			sw $v0, intArr($t0)		# move int in integers($t0)
+			sw $v0, ageArr($t0)		# move int in integers($t0)
 			add $t0, $t0, 4			# increment count (int)
 
-			j readAgeID			# loop
+			j readAge			# loop
+
+		printIDPrompt:
+			li $v0, 4			# code for print_str
+			la $a0, newline			# $a0 <- newline
+			syscall				# print str
+
+ 			li $v0, 4			# code for print_str
+			la $a0, inputID		# $a0 <- inputID
+			syscall				# print str
+
+			li $v0, 4			# code for print_str
+			la $a0, newline			# $a0 <- newline
+			syscall				# print str
+
+			j resetCountSecond			# go to 'resetCountFirst'
+
+		resetCountSecond:
+			li $t0, 0			# set $t0 = 0
+			j readID			# go to 'readID'
+
+		readID:
+			beq $t0, 40, return   # if count = integers.length, return to main
+
+			li $v0, 5			# code for read_int
+			syscall				# store int
+
+			sw $v0, IDArr($t0)		# move int in integers($t0)
+			add $t0, $t0, 4			# increment count (int)
+
+			j readID			# loop	
 
 #------------------------------------------------------------------------------------------------------------------------
 #
 # Registers:
-#	$t0 <- str counter
-#	$t1 <- int counter
-#	$t2 <- record counter
+#	$t0 <- general loop counter / str counter
+#	$t1 <- age counter
+#	$t2 <- ID counter
+#	$t3 <- record counter
 #
 print:	
-		beq $t0, 400, return			# if $t0 = strings.length, return to main
-		beq $t1, 80, return			# if $t1 = integers.length, return to main
+		beq $t0, 410, return			# if $t0 = strings.length, return to main
+		beq $t1, 40, return			# if $t1 = integers.length, return to main
+		beq $t2, 40, return			# if $t1 = integers.length, return to main
 	
 		li $v0, 4				# code for print_str
 		la $a0, prefix				# $a0 <- prefix
 		syscall					# print str
 
 		li $v0, 1				# code for print_int
-		move $a0, $t2				# $a0 <- count
+		move $a0, $t3				# $a0 <- count
 		syscall					# print int
 
 		li $v0, 4				# code for print_str
@@ -160,56 +193,57 @@ print:
 		syscall					# print space
 
 		li $v0, 1				# code for print_int
-		lw $a0, intArr($t1)			# $a0 <- integers($t1)
+		lw $a0, ageArr($t1)			# $a0 <- integers($t1)
 		syscall					# print int
 
-		addi $t1, $t1, 4			# increment count (int)
+		addi $t1, $t1, 4			# increment count (age)
 
 		li $v0, 4				# code for print_str
 		la $a0, space				# $a0 <- space
 		syscall					# print space
 
 		li $v0, 1				# code for print_int
-		lw $a0, intArr($t1)			# $a0 <- integers($t1)
+		lw $a0, IDArr($t2)			# $a0 <- integers($t1)
 		syscall					# print int
 
 		li $v0, 4				# code for print_str
 		la $a0, newline				# $a0 <- newline
 		syscall					# print newline
 
-		addi $t1, $t1, 4			# increment count (int)		
+		addi $t3, $t3, 1			# increment count (record)
+		addi $t2, $t2, 4			# increment count (ID)		
 		addi $t0, $t0, 41			# increment count (str)
-		addi $t2, $t2, 1			# increment count (record)
 
 		j print					# loop
 		
 #------------------------------------------------------------------------------------------------------------------------
 #
 # Visualization:
-#
 #	s, s, s, s, s, s, s, s, s, s
 #	0  1  2  3  4  5  6  7  8  9
 #
-#	ii, ii, ii, ii, ii, ii,  ii,  ii,  ii,  ii
-#	01  23  45  67  89  1011 1213 1415 1617 1819
-# Registers:
+#	a, a, a, a, a, a, a, a, a, a
+#	0  1  2  3  4  5  6  7  8  9
+
+#	i, i, i, i, i, i, i, i, i ,i
+#	0  1  2  3  4  5  6  7  8  9
 #
+# Registers:
 #	$s0 <- record num 1 
 #	$s1 <- record num 2
 # 	$s2 <- 1
 #   $s3 <- 4
 #	$s4 <- 40
-# 	$s5 <- intArr address
-# 	$s6 <- strArr address
-#
+
+# 	$s6 <- strArr / ageArr / IDArr address
 #	$s7 - $ra
 #
-#	$t3 <- index int
 #	$t4 <- index int
-#	$t5 <- index str
+#	$t5 <- index int
 #	$t6 <- index str
-#	$t7 <- temp $s to swap
-#	$t8 <- temp $s to swap
+#	$t7 <- index str
+#	$t8 <- temp $ to swap
+#	$t9 <- temp $ to swap
 #
 swap:
 		add $s7, $zero, $ra			# save $ra
@@ -246,42 +280,63 @@ swap:
 
 		li $s4, 40				# $s4 <- 40
 		mult $s0, $s4		    		# $t5 <- index str
-		mflo $t5
-		mult $s1, $s4				# $t6 <- index str
 		mflo $t6
+		mult $s1, $s4				# $t6 <- index str
+		mflo $t7
 
 		la $s6, strArr				# $s6 <- strArr address
-		add $t5, $t5, $s6			# address + index str
 		add $t6, $t6, $s6			# address + index str
+		add $t7, $t7, $s6			# address + index str
 
-		lb $t7, ($t5)				# $t7 <- value @ strArr[0]
-		lb $t8, ($t6)				# $t8 <- value @ strArr[1]
-
-		sb $t7, ($t6)				# strArr[1] <- $t7
-		sb $t8, ($t5)				# strArr[0] <- $t8
+		lw $t8, 0($t6)				# $t7 <- value @ strArr[0]
+		lw $t9, 0($t7)				# $t8 <- value @ strArr[1]
+		sw $t8, 0($t7)				# strArr[1] <- $t7
+		sw $t9, 0($t6)				# strArr[0] <- $t8
 
 #======================================================================================
 
 		li $s3, 4				# $s3 <- 4
 		mult $s0, $s3 			# $t0 <- index int
+		mflo $t4
+		mult $s1, $s3				# $t1 <- index int
+		mflo $t5
+
+		la $s6, ageArr				# $s6 <- ageArr address
+		add $t4, $t4, $s6			# address + index int
+		add $t5, $t5, $s6			# address + index int
+
+		lw $t8, 0($t4)				# $t7 <- value @ ageArr[0]
+		lw $t9, 0($t5)				# $t8 <- value @ ageArr[1]
+		sw $t8, 0($t5)				# ageArr[1] <- $t7
+		sw $t9, 0($t4)				# ageArr[0] <- $t8
+
+		li $s0, 0					# clear registers $s0,
+		li $s1, 0					# $s1,
+		li $s6, 0					# $s6,
+		li $t4, 0					# $t4,
+		li $t5, 0					# $t5,
+		li $t8, 0					# #$t7,	
+		li $t9, 0					# $t8 for reuse
+
+#======================================================================================
+
+		mult $s0, $s3 			# $t0 <- index int
 		mflo $t3
 		mult $s1, $s3				# $t1 <- index int
 		mflo $t4
 
-		# make sure in correct location
+		la $s6, IDArr				# $s5 <- IDArr address
+		add $t4, $t4, $s6			# address + index int
+		add $t5, $t5, $s6			# address + index int
 
-		la $s5, intArr				# $s5 <- intArr address
-		add $t3, $t3, $s6			# address + index str
-		add $t4, $t4, $s6			# address + index str
-
-		lw $t7, ($t3)				# $t7 <- value @ strArr[0]
-		lw $t8, ($t4)				# $t8 <- value @ strArr[1]
-
-		sw $t7, ($t4)				# strArr[1] <- $t7
-		sw $t8, ($t3)				# strArr[0] <- $t8
+		lw $t8, 0($t4)				# $t7 <- value @ IDArr[0]
+		lw $t9, 0($t5)				# $t8 <- value @ IDArr[1]
+		sw $t8, 0($t5)				# IDArr[1] <- $t7
+		sw $t9, 0($t4)				# IDArr[0] <- $t8
 
 #======================================================================================
 
+		li $t3, 1				# load $t3 <- 1
 		jal print				# go to 'print'
 		li $ra, 0				# clear $ra
 
